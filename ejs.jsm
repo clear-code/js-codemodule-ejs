@@ -1,10 +1,10 @@
 /**
- * @fileOverview Embedded JavaScript Template Library for Firefox 3.5 or later
+ * @fileOverview Embedded JavaScript Template Library for Firefox 4 or later
  * @author       ClearCode Inc.
- * @version      2
+ * @version      3
  *
  * @license
- *   The MIT License, Copyright (c) 2010 ClearCode Inc.
+ *   The MIT License, Copyright (c) 2010-2014 ClearCode Inc.
  *   https://github.com/clear-code/js-codemodules/blob/master/license.txt
  * @url https://github.com/clear-code/js-codemodules/blob/master/ejs.jsm
  * @url https://github.com/clear-code/js-codemodules/blob/master/ejs.test.js
@@ -96,9 +96,14 @@ var EJS;
 					__processTemplate__codes.push(codePart);
 				}
 			});
-			var sandbox = new Components.utils.Sandbox(this._global);
-			sandbox.__proto__ = { __processTemplate__results : [] };
-			if (aScope) sandbox.__proto__.__proto__ = aScope;
+			var sandboxPrototype = { __processTemplate__results : [] };
+			if (aScope)
+				sandboxPrototype = Object.create(aScope, {
+					__processTemplate__results : Object.getOwnPropertyDescriptor(sandboxPrototype, '__processTemplate__results')
+				});
+			var sandbox = new Components.utils.Sandbox(this._global, {
+				sandboxPrototype : sandboxPrototype
+			});
 			Components.utils.evalInSandbox(__processTemplate__codes.join('\n'), sandbox);
 			return sandbox.__processTemplate__results.join('');
 		},
